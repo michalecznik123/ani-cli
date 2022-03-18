@@ -22,21 +22,24 @@ def parse_page(soup: BeautifulSoup) -> List[models.AnimeModel]:
     return anime_on_page
 
 
+def get_page_amount(search):
+    payload = f'action=search_anime&search={search}&search_type=name&page=1'
+    url = "https://ogladajanime.pl/command_manager.php"
+    r = requests.request("POST", url, headers=common.HEADERS, data=payload)
+    soup = BeautifulSoup(r.json()['data'], 'lxml')
+    regex = re.compile(r"\\?action=search_anime&search_type=name&page=.+")
+    page_links = [int(a.get_text()) for a in soup.find_all('a', {'href': regex})]
+    if len(page_links):
+        return max(page_links)
+    else:
+        return 0
+
+
 class Search:
     def __init__(self, search: str):
         self.search = search
-        payload = f'action=search_anime&search={self.search}&search_type=name&page=1'
-        url = "https://ogladajanime.pl/command_manager.php"
-        r = requests.request("POST", url, headers=common.HEADERS, data=payload)
-        soup = BeautifulSoup(r.json()['data'], 'lxml')
-        regex = re.compile(r"\\?action=search_anime&search_type=name&page=.+")
-        page_links = [int(a.get_text()) for a in soup.find_all('a', {'href': regex})]
-        if len(page_links):
-            self.page_amount = max(page_links)
-        else:
-            self.page_amount = 0
+        self.page_amount = get_page_amount(search)
         self.pages = [None] * (self.page_amount + 1)
-        self.pages[0] = parse_page(soup)
         self.page = 0
 
     def get_page(self, page_number) -> List[models.AnimeModel]:
