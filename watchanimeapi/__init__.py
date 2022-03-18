@@ -1,5 +1,5 @@
 from . import (
     models,
     common,
-    main,
 )
+from . import main as watchanime
