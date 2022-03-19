@@ -63,6 +63,9 @@ class Search:
         self.page -= 1
         return self.get_page(self.page)
 
+    def get_current_page(self) -> List[models.AnimeModel]:
+        return self.get_page(self.page)
+
 
 def parse_player(url: str) -> List[str]:
     r = requests.get(url, headers=common.HEADERS)
