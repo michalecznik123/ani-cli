@@ -101,15 +101,35 @@ def parse_episode_list(anime_id: int, anime_url: str, start_index=0) -> List[mod
 class Anime(models.AnimeModel):
     def __init__(self, anime: models.AnimeModel):
         r = requests.get(anime.url, headers=common.HEADERS)
-        self.anime_id = re.search(r'CurrentAnimeId = (?P<anime_id>.+);', r.text)['anime_id']
-        self.start_index = -30
+        self.anime_id = int(re.search(r'CurrentAnimeId = (?P<anime_id>.+);', r.text)['anime_id'])
+        self.start_index = 0
+
         super().__init__(anime.url, anime.title, anime.description, anime.type)
 
     def get_next_page(self):
         self.start_index += 30
         episodes = parse_episode_list(self.anime_id, self.url, start_index=self.start_index)
+
         if len(episodes) < 30:
-            self.start_index = -30
+            self.start_index = 0
+
+        if len(episodes) == 0:
+            return None
+
+        return episodes
+
+    def get_previous_page(self):
+        if self.start_index < 0:
+            return None
+
+        if self.start_index:
+            self.start_index -= 30
+
+        episodes = parse_episode_list(self.anime_id, self.url, start_index=self.start_index)
+
         if len(episodes) == 0:
             return None
         return episodes
+
+    def get_current_page(self):
+        return parse_episode_list(self.anime_id, self.url, start_index=self.start_index)
