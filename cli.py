@@ -19,7 +19,11 @@ def chose_quality(qualities):
 
 
 def player(episode):
-    player_data = cda.get_video_data(watchanime.parse_player(episode.link)[-1])
+    try:
+        player_data = cda.get_video_data(watchanime.parse_player(episode.link)[-1])
+    except IndexError:
+        print('Nie ma dostępnych playerów :(')
+        return None
     quality = chose_quality(player_data['video']['qualities'])
     url = cda.get_video_url(player_data, quality)
     system(f'mpv {url}')
