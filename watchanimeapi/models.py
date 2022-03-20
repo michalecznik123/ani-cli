@@ -2,11 +2,11 @@ from typing import List, Tuple
 
 
 class Episode:
-    def __init__(self, title: str, number: int, is_filer: str, links: List[str]):
+    def __init__(self, title: str, number: int, is_filer: str, link: str):
         self.title = title
         self.number = number
         self.is_filler = is_filer
-        self.links = links
+        self.link = link
 
     def get_summary(self) -> Tuple[int, str, str]:
         return self.number, self.title, self.is_filler

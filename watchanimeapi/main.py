@@ -72,15 +72,17 @@ def parse_player(url: str) -> List[str]:
     soup = BeautifulSoup(r.text, 'lxml')
     links = []
     for player in soup.find_all('tr'):
-        if len(player.contents) > 6:
-            if player.contents[5].text == 'cda':
-                data = player.contents[7].find('button').get('onclick')
-                episode_id, player_id = re.search("changePlayer\\((?P<player_data>.*)\\);", data)['player_data'].split(
-                    ',')
-                url = f'https://ogladajanime.pl/player_data.php?action=get_player&url_id={player_id}&episode_id=' \
-                      f'{episode_id} '
-                links.append(requests.get(url).text)
-                print('new_episode')
+
+        if len(player.contents) > 6\
+                and player.contents[5].text == 'cda'\
+                and player.contents[3].text != '-'\
+                and player.contents[3].find('img').get('src') == 'https://cdn.ogladajanime.pl/images/flags/pl.png':
+            data = player.contents[7].find('button').get('onclick')
+            episode_id, player_id = re.search("changePlayer\\((?P<player_data>.*)\\);", data)['player_data'].split(
+                ',')
+            url = f'https://ogladajanime.pl/player_data.php?action=get_player&url_id={player_id}&episode_id=' \
+                  f'{episode_id} '
+            links.append(requests.get(url).text)
     return links
 
 
@@ -93,8 +95,8 @@ def parse_episode_list(anime_id: int, anime_url: str, start_index=0) -> List[mod
         number = int(episode.contents[0].text)
         title = episode.contents[2].text
         is_filer = episode.find('span').text
-        url = f'{anime_url}{number}'
-        episodes.append(models.Episode(title, number, is_filer, parse_player(url)))
+        url = f'{anime_url}/{number}'
+        episodes.append(models.Episode(title, number, is_filer, url))
     return episodes
 
 
